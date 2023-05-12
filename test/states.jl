@@ -6,4 +6,10 @@ using Test
     b = GenericBasis(4)
     ψ = Ket(b, v)
     @test ψ == ψ
+
+    ϕ = Bra(b, v)
+    @test ϕ == ϕ
+    @test ψ != ϕ
+
+    @test ϕ * ψ ≈ 1.0 atol = 1.0e-12
 end

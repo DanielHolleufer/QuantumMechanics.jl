@@ -1,6 +1,8 @@
 module QuantumMechanics
 
-export Basis, GenericBasis, FockBasis, Ket
+using LinearAlgebra
+
+export Basis, GenericBasis, FockBasis, Ket, Bra
 
 include("bases.jl")
 include("states.jl")

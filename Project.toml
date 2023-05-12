@@ -3,6 +3,9 @@ uuid = "0f33a64a-03e1-4082-8e3f-8fba5d8e1cc6"
 authors = ["Daniel Holleufer <daniel.holleufer@gmail.com> and contributors"]
 version = "0.1.0"
 
+[deps]
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+
 [compat]
 julia = "1.9"
 
