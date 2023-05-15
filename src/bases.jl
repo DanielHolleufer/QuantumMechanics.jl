@@ -25,3 +25,23 @@ struct FockBasis <: Basis
     end
 end
 Base.:(==)(b1::FockBasis, b2::FockBasis) = b1.cutoff == b2.cutoff && b1.offset == b2.offset
+
+
+struct SpinBasis{S} <: Basis
+    dimensions::Vector{Integer}
+    spin::Rational{Integer}
+    function SpinBasis{S}(spin::Rational{<:Integer}) where S
+        num = numerator(spin)
+        den = denominator(spin)
+        if !(den == 1 || den == 2)
+            error("The spin number must be either integer or half-integer.")
+        end
+        if num ≤ 0
+            error("The spin number must be positive.")
+        end
+        new{spin}([numerator(2 * spin + 1)], spin)
+    end
+end
+SpinBasis(spin::Rational) = SpinBasis{spin}(spin)
+SpinBasis(spin) = SpinBasis(convert(Rational{Int}, spin))
+Base.:(==)(b1::SpinBasis, b2::SpinBasis) = b1.spin == b2.spin
