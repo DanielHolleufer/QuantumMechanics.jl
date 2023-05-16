@@ -5,16 +5,32 @@ using Test
     @testset "GenericBasis" begin
         generic_basis_4 = GenericBasis(4)
         generic_basis_21 = GenericBasis(21)
+        generic_basis_5 = GenericBasis(5)
+        generic_basis_5f0 = GenericBasis(5.0)
+        generic_basis_2_2_2a = GenericBasis([2 2 2])
+        generic_basis_2_2_2b = GenericBasis([2, 2, 2])
+        generic_basis_2_2_2c = GenericBasis([2; 2; 2])
+        generic_basis_1_2_3_4 = GenericBasis([1.0 2.0 3.0 4.0])
+        generic_basis_5_6_7_8_9 = GenericBasis([5 6 7 8 9])
 
+        @test generic_basis_5f0 isa GenericBasis{<:Integer}
+        @test generic_basis_5 == generic_basis_5f0
         @test generic_basis_4 == generic_basis_4
         @test generic_basis_21 == generic_basis_21
+        @test generic_basis_2_2_2a == generic_basis_2_2_2b
+        @test generic_basis_2_2_2a == generic_basis_2_2_2c
         @test generic_basis_4 != generic_basis_21
+        @test generic_basis_1_2_3_4 != generic_basis_5_6_7_8_9
 
         @test length(generic_basis_4) == 4
         @test length(generic_basis_21) == 21
+        @test length(generic_basis_2_2_2a) == 8
 
         @test_throws Exception GenericBasis(0)
         @test_throws Exception GenericBasis(-17)
+        @test_throws Exception GenericBasis(5.1)
+        @test_throws Exception GenericBasis([2.0 1.1])
+        @test_throws Exception GenericBasis([1 2; 3 4])
     end
 
 

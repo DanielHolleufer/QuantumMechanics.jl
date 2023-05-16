@@ -7,12 +7,48 @@ Return the total dimension of the Hilbert space spanned by the given basis.
 """
 Base.length(b::Basis) = prod(b.dimensions)
 
-struct GenericBasis <: Basis
-    dimensions::Vector{Integer}
-    function GenericBasis(N::Integer)
-        N > 0 ? new([N]) : error("GenericBasis must have a positive dimension, N > 0.")
+"""
+    GenericBasis(v)
+
+Create a generic basis with dimension `v` for a Hilbert space.
+
+The input `v` can be either an integer or a vector of integers. If `v` is an integer, then
+the basis will have one component with dimension `v`. If `v` is a vector, then the basis
+will have components equal to `length(v)` each with dimension equal to the corresponding
+component of `v`.
+
+# Examples
+```jldoctest
+julia> GenericBasis(4)
+GenericBasis{Int64}(4)
+
+julia> GenericBasis([2, 2, 2])
+GenericBasis{Vector{Int64}}([2, 2, 2])
+"""
+struct GenericBasis{T} <: Basis
+    dimensions::Vector{T}
+    function GenericBasis(v::Vector{T}) where T <: Integer
+        if prod(v .> 0)
+            new{T}(v)
+        else
+            error("Basis must have positive dimensions.")
+        end
     end
 end
+function GenericBasis(M::Matrix{T}) where T <: Integer
+    if size(M)[1] != 1 && size(M)[2] != 1
+        error("Array of dimensions must be either row or coloumn vector/matrix.")
+    end
+    return GenericBasis(vec(M))
+end
+function GenericBasis(M::Matrix{T}) where T <: AbstractFloat
+    if size(M)[1] != 1 && size(M)[2] != 1
+        error("Array of dimensions must be either row or coloumn vector/matrix.")
+    end
+    return GenericBasis(vec(convert.(Integer, M)))
+end
+GenericBasis(N::T) where T <: Integer = GenericBasis([N])
+GenericBasis(N::AbstractFloat) = GenericBasis(convert(Integer, N))
 Base.:(==)(b1::GenericBasis, b2::GenericBasis) = b1.dimensions == b2.dimensions
 
 
