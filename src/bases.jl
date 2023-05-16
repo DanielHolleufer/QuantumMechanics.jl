@@ -28,7 +28,7 @@ GenericBasis{Vector{Int64}}([2, 2, 2])
 """
 struct GenericBasis{T} <: Basis
     dimensions::Vector{T}
-    function GenericBasis(v::Vector{T}) where T <: Integer
+    function GenericBasis(v::Vector{T}) where {T<:Integer}
         if prod(v .> 0)
             new{T}(v)
         else
@@ -36,14 +36,14 @@ struct GenericBasis{T} <: Basis
         end
     end
 end
-function GenericBasis(M::Matrix{T}) where T <: Integer
+function GenericBasis(M::Matrix{T}) where {T<:Integer}
     if size(M)[1] != 1 && size(M)[2] != 1
         error("Array of dimensions must be either row or coloumn vector/matrix.")
     end
     return GenericBasis(vec(M))
 end
-GenericBasis(M::Matrix{T}) where T <: AbstractFloat = GenericBasis(convert.(Integer, M))
-GenericBasis(N::T) where T <: Integer = GenericBasis([N])
+GenericBasis(M::Matrix{T}) where {T<:AbstractFloat} = GenericBasis(convert.(Integer, M))
+GenericBasis(N::T) where {T<:Integer} = GenericBasis([N])
 GenericBasis(N::AbstractFloat) = GenericBasis(convert(Integer, N))
 Base.:(==)(b1::GenericBasis, b2::GenericBasis) = b1.dimensions == b2.dimensions
 
@@ -52,7 +52,7 @@ struct FockBasis <: Basis
     dimensions::Vector{Integer}
     cutoff::Integer
     offset::Integer
-    function FockBasis(cutoff::Integer, offset::Integer = 0)
+    function FockBasis(cutoff::Integer, offset::Integer=0)
         cutoff - offset ≥ 0 ? new([cutoff + 1 - offset], cutoff, offset) : error("Cufoff must be larger than or equal to offset.")
     end
 end
@@ -62,7 +62,7 @@ Base.:(==)(b1::FockBasis, b2::FockBasis) = b1.cutoff == b2.cutoff && b1.offset =
 struct SpinBasis{S} <: Basis
     dimensions::Vector{Integer}
     spin::Rational{Integer}
-    function SpinBasis{S}(spin::Rational{<:Integer}) where S
+    function SpinBasis{S}(spin::Rational{<:Integer}) where {S}
         num = numerator(spin)
         den = denominator(spin)
         if !(den == 1 || den == 2)
