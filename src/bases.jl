@@ -41,12 +41,7 @@ function GenericBasis(M::Matrix{T}) where T <: Integer
     end
     return GenericBasis(vec(M))
 end
-function GenericBasis(M::Matrix{T}) where T <: AbstractFloat
-    if size(M)[1] != 1 && size(M)[2] != 1
-        error("Array of dimensions must be either row or coloumn vector/matrix.")
-    end
-    return GenericBasis(vec(convert.(Integer, M)))
-end
+GenericBasis(M::Matrix{T}) where T <: AbstractFloat = GenericBasis(convert.(Integer, M))
 GenericBasis(N::T) where T <: Integer = GenericBasis([N])
 GenericBasis(N::AbstractFloat) = GenericBasis(convert(Integer, N))
 Base.:(==)(b1::GenericBasis, b2::GenericBasis) = b1.dimensions == b2.dimensions
