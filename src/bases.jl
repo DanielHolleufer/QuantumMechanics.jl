@@ -3,7 +3,7 @@ abstract type Basis end
 """
     length(b::Basis)
 
-Return the total dimension of the Hilbert space spanned by the given basis.
+Return the total dimension of the Hilbert space spanned by the basis `b`.
 """
 Base.length(b::Basis) = prod(b.dimensions)
 
@@ -24,6 +24,7 @@ GenericBasis{Int64}(4)
 
 julia> GenericBasis([2, 2, 2])
 GenericBasis{Vector{Int64}}([2, 2, 2])
+```
 """
 struct GenericBasis{T} <: Basis
     dimensions::Vector{T}
