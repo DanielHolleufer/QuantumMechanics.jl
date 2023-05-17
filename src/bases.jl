@@ -53,7 +53,7 @@ Base.:(==)(b1::GenericBasis, b2::GenericBasis) = b1.dimensions == b2.dimensions
 Create a basis for the Fock space starting at the offset and ending at the cutoff.
 
 # Examples
-jldoctest```
+```jldoctest
 julia> FockBasis(10)
 FockBasis{Int64}([11], 10, 0)
 
@@ -97,3 +97,4 @@ end
 SpinBasis(spin::Rational) = SpinBasis{spin}(spin)
 SpinBasis(spin) = SpinBasis(convert(Rational{Int}, spin))
 Base.:(==)(b1::SpinBasis, b2::SpinBasis) = b1.spin == b2.spin
+
