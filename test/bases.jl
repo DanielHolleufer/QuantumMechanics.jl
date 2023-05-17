@@ -38,12 +38,18 @@ using Test
         fock_basis_10 = FockBasis(10)
         fock_basis_15 = FockBasis(15)
         fock_basis_15_3 = FockBasis(15, 3)
+        fock_basis_15f = FockBasis(15.0)
+        fock_basis_15_3f = FockBasis(15, 3.0)
+        fock_basis_15f_3f = FockBasis(15.0, 3.0)
 
         @test fock_basis_10.offset == 0
 
         @test fock_basis_10 == fock_basis_10
         @test fock_basis_15 == fock_basis_15
+        @test fock_basis_15 == fock_basis_15f
         @test fock_basis_15_3 == fock_basis_15_3
+        @test fock_basis_15_3 == fock_basis_15_3f
+        @test fock_basis_15_3 == fock_basis_15f_3f
         @test fock_basis_10 != fock_basis_15
         @test fock_basis_15 != fock_basis_15_3
         @test fock_basis_15 != fock_basis_15_3
@@ -54,6 +60,11 @@ using Test
 
         @test_throws Exception FockBasis(10, 12)
         @test_throws Exception FockBasis(-3)
+        @test_throws Exception FockBasis(10, -3)
+        @test_throws Exception FockBasis(-2, -3)
+        @test_throws Exception FockBasis(4.1)
+        @test_throws Exception FockBasis(4.0, 2.1)
+        @test_throws Exception FockBasis(4.1, 2.1)
     end
 
 

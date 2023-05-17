@@ -20,7 +20,7 @@ component of `v`.
 # Examples
 ```jldoctest
 julia> GenericBasis(4)
-GenericBasis{Int64}(4)
+GenericBasis{Int64}([4])
 
 julia> GenericBasis([2, 2, 2])
 GenericBasis{Vector{Int64}}([2, 2, 2])
@@ -47,14 +47,34 @@ GenericBasis(N::T) where {T<:Integer} = GenericBasis([N])
 GenericBasis(N::AbstractFloat) = GenericBasis(convert(Integer, N))
 Base.:(==)(b1::GenericBasis, b2::GenericBasis) = b1.dimensions == b2.dimensions
 
+"""
+    FockBasis(cutoff::Integer, offset::Integer=0)
 
-struct FockBasis <: Basis
-    dimensions::Vector{Integer}
-    cutoff::Integer
-    offset::Integer
-    function FockBasis(cutoff::Integer, offset::Integer=0)
-        cutoff - offset ≥ 0 ? new([cutoff + 1 - offset], cutoff, offset) : error("Cufoff must be larger than or equal to offset.")
+Create a basis for the Fock space starting at the offset and ending at the cutoff.
+
+# Examples
+jldoctest```
+julia> FockBasis(10)
+FockBasis{Int64}([11], 10, 0)
+
+julia> FockBasis(10, 2)
+FockBasis{Int64}([9], 10, 2)
+```
+"""
+struct FockBasis{T} <: Basis
+    dimensions::Vector{T}
+    cutoff::T
+    offset::T
+    function FockBasis(cutoff::T, offset::T=0) where {T<:Integer}
+        if cutoff < 0 || offset < 0 || cutoff < offset
+            error("Cufoff must be larger than or equal to offset, and they must both be \
+                   positive.")
+        end
+        new{T}([cutoff - offset + 1], cutoff, offset)
     end
+end
+function FockBasis(cutoff::S, offset::T=0) where {S<:Number,T<:Number}
+    FockBasis(convert(Integer, cutoff), convert(Integer, offset))
 end
 Base.:(==)(b1::FockBasis, b2::FockBasis) = b1.cutoff == b2.cutoff && b1.offset == b2.offset
 
