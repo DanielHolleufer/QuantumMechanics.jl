@@ -23,7 +23,7 @@ julia> GenericBasis(4)
 GenericBasis{Int64}([4])
 
 julia> GenericBasis([2, 2, 2])
-GenericBasis{Vector{Int64}}([2, 2, 2])
+GenericBasis{Int64}([2, 2, 2])
 ```
 """
 struct GenericBasis{T} <: Basis
@@ -36,15 +36,14 @@ struct GenericBasis{T} <: Basis
         end
     end
 end
-function GenericBasis(M::Matrix{T}) where {T<:Integer}
+GenericBasis(v::Vector{T}) where {T<:Number} = GenericBasis(convert.(Integer, v))
+function GenericBasis(M::Matrix{T}) where {T<:Number}
     if size(M)[1] != 1 && size(M)[2] != 1
         error("Array of dimensions must be either row or coloumn vector/matrix.")
     end
     return GenericBasis(vec(M))
 end
-GenericBasis(M::Matrix{T}) where {T<:AbstractFloat} = GenericBasis(convert.(Integer, M))
-GenericBasis(N::T) where {T<:Integer} = GenericBasis([N])
-GenericBasis(N::AbstractFloat) = GenericBasis(convert(Integer, N))
+GenericBasis(N::T) where {T<:Number} = GenericBasis([convert(Integer, N)])
 Base.:(==)(b1::GenericBasis, b2::GenericBasis) = b1.dimensions == b2.dimensions
 
 """

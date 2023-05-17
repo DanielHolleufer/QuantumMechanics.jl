@@ -10,6 +10,7 @@ using Test
         generic_basis_2_2_2a = GenericBasis([2 2 2])
         generic_basis_2_2_2b = GenericBasis([2, 2, 2])
         generic_basis_2_2_2c = GenericBasis([2; 2; 2])
+        generic_basis_2_2_2d = GenericBasis([2.0; 2.0; 2.0])
         generic_basis_1_2_3_4 = GenericBasis([1.0 2.0 3.0 4.0])
         generic_basis_5_6_7_8_9 = GenericBasis([5 6 7 8 9])
 
@@ -19,6 +20,7 @@ using Test
         @test generic_basis_21 == generic_basis_21
         @test generic_basis_2_2_2a == generic_basis_2_2_2b
         @test generic_basis_2_2_2a == generic_basis_2_2_2c
+        @test generic_basis_2_2_2a == generic_basis_2_2_2d
         @test generic_basis_4 != generic_basis_21
         @test generic_basis_1_2_3_4 != generic_basis_5_6_7_8_9
 
