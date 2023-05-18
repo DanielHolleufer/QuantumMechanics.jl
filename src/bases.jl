@@ -77,11 +77,26 @@ function FockBasis(cutoff::S, offset::T=0) where {S<:Number,T<:Number}
 end
 Base.:(==)(b1::FockBasis, b2::FockBasis) = b1.cutoff == b2.cutoff && b1.offset == b2.offset
 
+"""
+    SpinBasis(spin)
 
-struct SpinBasis{S} <: Basis
-    dimensions::Vector{Integer}
-    spin::Rational{Integer}
-    function SpinBasis{S}(spin::Rational{<:Integer}) where {S}
+Create a basis for a spin system with total spin equal to `spin`.
+
+The argument `spin` must be integer or half integer. It is then stored as a Rational.
+
+# Examples
+```jldoctest
+julia> SpinBasis(1 // 2)
+SpinBasis{1//2, Int64}([2], 1//2)
+
+julia> SpinBasis(100)
+SpinBasis{100//1, Int64}([201], 100//1)
+```
+"""
+struct SpinBasis{S,T} <: Basis
+    dimensions::Vector{T}
+    spin::Rational{T}
+    function SpinBasis{S}(spin::Rational{T}) where {S,T<:Integer}
         num = numerator(spin)
         den = denominator(spin)
         if !(den == 1 || den == 2)
@@ -90,10 +105,10 @@ struct SpinBasis{S} <: Basis
         if num ≤ 0
             error("The spin number must be positive.")
         end
-        new{spin}([numerator(2 * spin + 1)], spin)
+        new{spin,T}([numerator(2 * spin + 1)], spin)
     end
 end
 SpinBasis(spin::Rational) = SpinBasis{spin}(spin)
-SpinBasis(spin) = SpinBasis(convert(Rational{Int}, spin))
+SpinBasis(spin::T) where {T<:Number} = SpinBasis(convert(Rational, spin))
 Base.:(==)(b1::SpinBasis, b2::SpinBasis) = b1.spin == b2.spin
 
