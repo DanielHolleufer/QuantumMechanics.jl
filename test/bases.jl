@@ -7,35 +7,75 @@ using Test
         generic_basis_21 = GenericBasis(21)
         generic_basis_5 = GenericBasis(5)
         generic_basis_5f0 = GenericBasis(5.0)
-        generic_basis_2_2_2a = GenericBasis([2 2 2])
-        generic_basis_2_2_2b = GenericBasis([2, 2, 2])
-        generic_basis_2_2_2c = GenericBasis([2; 2; 2])
-        generic_basis_2_2_2d = GenericBasis([2.0; 2.0; 2.0])
-        generic_basis_1_2_3_4 = GenericBasis([1.0 2.0 3.0 4.0])
-        generic_basis_5_6_7_8_9 = GenericBasis([5 6 7 8 9])
 
         @test generic_basis_5f0 isa GenericBasis{<:Integer}
         @test generic_basis_5 == generic_basis_5f0
         @test generic_basis_4 == generic_basis_4
         @test generic_basis_21 == generic_basis_21
-        @test generic_basis_2_2_2a == generic_basis_2_2_2b
-        @test generic_basis_2_2_2a == generic_basis_2_2_2c
-        @test generic_basis_2_2_2a == generic_basis_2_2_2d
         @test generic_basis_4 != generic_basis_21
-        @test generic_basis_1_2_3_4 != generic_basis_5_6_7_8_9
 
         @test length(generic_basis_4) == 4
         @test length(generic_basis_21) == 21
-        @test length(generic_basis_2_2_2a) == 8
 
         @test_throws Exception GenericBasis(0)
         @test_throws Exception GenericBasis(-17)
         @test_throws Exception GenericBasis(5.1)
+        @test_throws Exception GenericBasis([2 4])
         @test_throws Exception GenericBasis([2.0 1.1])
         @test_throws Exception GenericBasis([1 2; 3 4])
     end
+    
+    @testset "CompositeBasis" begin
+        generic_basis_1 = GenericBasis(4)
+        generic_basis_2 = GenericBasis(20)
+        fock_basis_1 = FockBasis(20)
+        fock_basis_2 = FockBasis(50, 25)
+        spin_basis_1 = SpinBasis(1 // 2)
+        spin_basis_2 = SpinBasis(2)
 
+        composite_generic = CompositeBasis(generic_basis_1, generic_basis_2)
+        composite_fock = CompositeBasis(fock_basis_1, fock_basis_2)
+        composite_spin = CompositeBasis(spin_basis_1, spin_basis_2)
+        composite_mix_1 = CompositeBasis(generic_basis_1, fock_basis_1, spin_basis_1)
+        composite_mix_2 = CompositeBasis(generic_basis_2, fock_basis_2, spin_basis_2)
+        composite_mix_all = CompositeBasis(generic_basis_1, fock_basis_1, spin_basis_1,
+            generic_basis_2, fock_basis_2, spin_basis_2)
 
+        @test composite_generic != generic_basis_1
+        @test composite_generic != generic_basis_2
+        @test composite_generic != composite_fock
+        @test composite_generic != composite_spin
+        @test composite_fock != composite_spin
+        @test composite_mix_1 != composite_mix_2
+
+        @test composite_generic.dimension == [generic_basis_1.dimension;
+            generic_basis_2.dimension]
+        @test composite_fock.dimension == [fock_basis_1.dimension; fock_basis_2.dimension]
+        @test composite_spin.dimension == [spin_basis_1.dimension; spin_basis_2.dimension]
+        @test composite_mix_1.dimension == [generic_basis_1.dimension;
+            fock_basis_1.dimension; spin_basis_1.dimension]
+        @test composite_mix_2.dimension == [generic_basis_2.dimension;
+            fock_basis_2.dimension; spin_basis_2.dimension]
+        @test composite_mix_1.dimension != composite_mix_2.dimension
+
+        @test composite_generic.bases == (generic_basis_1, generic_basis_2)
+        @test composite_fock.bases == (fock_basis_1, fock_basis_2)
+        @test composite_spin.bases == (spin_basis_1, spin_basis_2)
+        @test composite_mix_1.bases == (generic_basis_1, fock_basis_1, spin_basis_1)
+        @test composite_mix_2.bases == (generic_basis_2, fock_basis_2, spin_basis_2)
+        @test composite_mix_1.bases != composite_mix_2.bases
+
+        @test length(composite_generic) == length(generic_basis_1) * length(generic_basis_2)
+        @test length(composite_fock) == length(fock_basis_1) * length(fock_basis_2)
+        @test length(composite_spin) == length(spin_basis_1) * length(spin_basis_2)
+        @test length(composite_mix_1) == length(generic_basis_1) *
+                                         length(fock_basis_1) *
+                                         length(spin_basis_1)
+        @test length(composite_mix_2) == length(generic_basis_2) *
+                                         length(fock_basis_2) *
+                                         length(spin_basis_2)
+    end
+    
     @testset "FockBasis" begin
         fock_basis_10 = FockBasis(10)
         fock_basis_15 = FockBasis(15)
@@ -68,7 +108,6 @@ using Test
         @test_throws Exception FockBasis(4.0, 2.1)
         @test_throws Exception FockBasis(4.1, 2.1)
     end
-
 
     @testset "SpinBasis" begin
         spin_basis_1_2 = SpinBasis(1 // 2)
