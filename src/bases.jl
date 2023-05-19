@@ -40,7 +40,8 @@ bases.
 # Examples
 ```jldoctest
 julia> CompositeBasis(GenericBasis(8), FockBasis(50, 20))
-CompositeBasis{Tuple{GenericBasis{Int64}, FockBasis{Int64}}, Vector{Int64}}((GenericBasis{Int64}(8), FockBasis{Int64}(31, 50, 20)), [8, 31])
+CompositeBasis{Tuple{GenericBasis{Int64}, FockBasis{Int64}}, Vector{Int64}}((GenericBasis{In
+t64}(8), FockBasis{Int64}(31, 50, 20)), [8, 31])
 ```
 """
 struct CompositeBasis{B,T} <: Basis
