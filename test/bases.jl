@@ -24,7 +24,7 @@ using Test
         @test_throws Exception GenericBasis([2.0 1.1])
         @test_throws Exception GenericBasis([1 2; 3 4])
     end
-    
+
     @testset "CompositeBasis" begin
         generic_basis_1 = GenericBasis(4)
         generic_basis_2 = GenericBasis(20)
@@ -40,6 +40,12 @@ using Test
         composite_mix_2 = CompositeBasis(generic_basis_2, fock_basis_2, spin_basis_2)
         composite_mix_all = CompositeBasis(generic_basis_1, fock_basis_1, spin_basis_1,
             generic_basis_2, fock_basis_2, spin_basis_2)
+        composite_nested_1 = CompositeBasis(composite_mix_1, composite_mix_2)
+        composite_nested_2 = CompositeBasis(
+            (composite_mix_1.bases..., composite_mix_2.bases...),
+            [composite_mix_1.dimension; composite_mix_2.dimension])
+        composite_mix_generic_1 = CompositeBasis(composite_mix_1, generic_basis_2)
+        composite_mix_generic_2 = CompositeBasis(composite_mix_2, generic_basis_1)
 
         @test composite_generic != generic_basis_1
         @test composite_generic != generic_basis_2
@@ -47,6 +53,13 @@ using Test
         @test composite_generic != composite_spin
         @test composite_fock != composite_spin
         @test composite_mix_1 != composite_mix_2
+        @test composite_mix_all != composite_nested_1
+        @test composite_mix_all == composite_nested_2
+        @test composite_mix_generic_1 != CompositeBasis(generic_basis_1, fock_basis_1,
+            spin_basis_1, generic_basis_2)
+        @test composite_mix_generic_2 != CompositeBasis(generic_basis_2, fock_basis_2,
+            spin_basis_2, generic_basis_1)
+        @test composite_mix_generic_1 != composite_mix_generic_2
 
         @test composite_generic.dimension == [generic_basis_1.dimension;
             generic_basis_2.dimension]
@@ -56,7 +69,12 @@ using Test
             fock_basis_1.dimension; spin_basis_1.dimension]
         @test composite_mix_2.dimension == [generic_basis_2.dimension;
             fock_basis_2.dimension; spin_basis_2.dimension]
+        @test composite_nested_1.dimension == [length(composite_mix_1);
+            length(composite_mix_2)]
+        @test composite_nested_1.dimension != [composite_mix_1.dimension;
+            composite_mix_2.dimension]
         @test composite_mix_1.dimension != composite_mix_2.dimension
+        @test composite_nested_1.dimension != composite_mix_all.dimension
 
         @test composite_generic.bases == (generic_basis_1, generic_basis_2)
         @test composite_fock.bases == (fock_basis_1, fock_basis_2)
@@ -74,8 +92,34 @@ using Test
         @test length(composite_mix_2) == length(generic_basis_2) *
                                          length(fock_basis_2) *
                                          length(spin_basis_2)
+
+        @test_throws Exception CompositeBasis((composite_mix_1, composite_mix_2),
+            [composite_mix_2.dimension; composite_mix_1.dimension])
+
+        tensor_generic = tensor(generic_basis_1, generic_basis_2)
+        tensor_fock = tensor(fock_basis_1, fock_basis_2)
+        tensor_spin = tensor(spin_basis_1, spin_basis_2)
+        tensor_mix_1 = tensor(generic_basis_1, fock_basis_1, spin_basis_1)
+        tensor_mix_2 = tensor(generic_basis_2, fock_basis_2, spin_basis_2)
+        tensor_mix_all = tensor(generic_basis_1, fock_basis_1, spin_basis_1,
+            generic_basis_2, fock_basis_2, spin_basis_2)
+
+        @test composite_generic == tensor_generic
+        @test composite_fock == tensor_fock
+        @test composite_spin == tensor_spin
+        @test composite_mix_1 == tensor_mix_1
+        @test composite_mix_2 == tensor_mix_2
+        @test composite_mix_all == tensor_mix_all
+        
+        @test tensor_generic == generic_basis_1 ⊗ generic_basis_2
+        @test tensor_fock == fock_basis_1 ⊗ fock_basis_2
+        @test tensor_spin == spin_basis_1 ⊗ spin_basis_2
+        @test tensor_mix_1 == generic_basis_1 ⊗ fock_basis_1 ⊗ spin_basis_1
+        @test tensor_mix_1 != generic_basis_1 ⊗ spin_basis_1 ⊗ fock_basis_1
+        @test tensor_mix_all == generic_basis_1 ⊗ fock_basis_1 ⊗ spin_basis_1 ⊗
+                                generic_basis_2 ⊗ fock_basis_2 ⊗ spin_basis_2
     end
-    
+
     @testset "FockBasis" begin
         fock_basis_10 = FockBasis(10)
         fock_basis_15 = FockBasis(15)

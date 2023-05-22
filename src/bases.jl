@@ -37,20 +37,73 @@ Base.:(==)(b1::GenericBasis, b2::GenericBasis) = b1.dimension == b2.dimension
 Create a basis for the composite system consisting of the systems corresponding to the given
 bases.
 
+It is possible for a `CompositeBasis` to contain another `CompositeBasis`.
+
 # Examples
 ```jldoctest
-julia> CompositeBasis(GenericBasis(8), FockBasis(50, 20))
+julia> composite_basis = CompositeBasis(GenericBasis(8), FockBasis(50, 20))
 CompositeBasis{Tuple{GenericBasis{Int64}, FockBasis{Int64}}, Vector{Int64}}((GenericBasis{Int64}(8), FockBasis{Int64}(31, 50, 20)), [8, 31])
+
+julia> CompositeBasis(composite_basis, SpinBasis(3//2))
+CompositeBasis{Tuple{CompositeBasis{Tuple{GenericBasis{Int64}, FockBasis{Int64}}, Vector{Int64}}, SpinBasis{3//2, Int64}}, Vector{Int64}}((CompositeBasis{Tuple{GenericBasis{Int64}, FockBasis{Int64}}, Vector{Int64}}((GenericBasis{Int64}(8), FockBasis{Int64}(31, 50, 20)), [8, 31]), SpinBasis{3//2, Int64}(4, 3//2)), [248, 4])
 ```
 """
 struct CompositeBasis{B,T} <: Basis
     bases::B
     dimension::T
-    function CompositeBasis(bases::B) where {B<:Tuple{Vararg{Basis}}}
-        return new{B, Vector{Int}}(bases, [length(b) for b ∈ bases])
+    function CompositeBasis(bases::B, v::Vector{T}) where {B<:Tuple{Vararg{Basis}},T<:Integer}
+        if prod(v .== [length(b) for b ∈ bases])
+            return new{B,Vector{Int}}(bases, v)
+        else
+            error("Given dimensions do not match the given bases.")
+        end
     end
 end
+function CompositeBasis(bases::B) where {B<:Tuple{Vararg{Basis}}} 
+    return CompositeBasis(bases, [length(b) for b ∈ bases])
+end
 CompositeBasis(b::Basis...) = CompositeBasis((b...,))
+function Base.:(==)(b1::CompositeBasis, b2::CompositeBasis)
+    return b1.bases == b2.bases && b1.dimension == b2.dimension
+end
+
+"""
+    tensor(b::Basis...)
+
+Create a basis for the composite system consisting of the systems corresponding to the given
+bases.
+
+When using `tensor`, rather than `CompositeBasis`, any `CompositeBasis` will be expanded
+into its components, meaning that the `CompositeBasis` returned from `tensor` will never
+contain another `CompositeBasis`.
+
+It is also possible to use to otimes symbol `⊗` as an infix operator.
+
+# Examples
+```jldoctest
+julia> composite_basis = tensor(GenericBasis(8), FockBasis(50, 20))
+CompositeBasis{Tuple{GenericBasis{Int64}, FockBasis{Int64}}, Vector{Int64}}((GenericBasis{Int64}(8), FockBasis{Int64}(31, 50, 20)), [8, 31])
+
+julia> tensor(composite_basis, SpinBasis(3//2))
+CompositeBasis{Tuple{GenericBasis{Int64}, FockBasis{Int64}, SpinBasis{3//2, Int64}}, Vector{Int64}}((GenericBasis{Int64}(8), FockBasis{Int64}(31, 50, 20), SpinBasis{3//2, Int64}(4, 3//2)), [8, 31, 4])
+
+julia> GenericBasis(12) ⊗ FockBasis(25) ⊗ SpinBasis(1)
+CompositeBasis{Tuple{GenericBasis{Int64}, FockBasis{Int64}, SpinBasis{1//1, Int64}}, Vector{Int64}}((GenericBasis{Int64}(12), FockBasis{Int64}(26, 25, 0), SpinBasis{1//1, Int64}(3, 1//1)), [12, 26, 3])
+```
+"""
+tensor(b::Basis) = b
+tensor(b1::Basis, b2::Basis) = CompositeBasis(b1, b2)
+function tensor(b1::CompositeBasis, b2::CompositeBasis)
+    return CompositeBasis((b1.bases..., b2.bases...), [b1.dimension; b2.dimension])
+end
+function tensor(b1::Basis, b2::CompositeBasis)
+    return CompositeBasis((b1, b2.bases...), [b1.dimension; b2.dimension])
+end
+function tensor(b1::CompositeBasis, b2::Basis)
+    return CompositeBasis((b1.bases..., b2), [b1.dimension; b2.dimension])
+end
+tensor(bases::Basis...) = reduce(tensor, bases)
+const ⊗ = tensor
 
 """
     FockBasis(cutoff::Integer, offset::Integer=0)
