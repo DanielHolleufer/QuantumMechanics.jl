@@ -93,7 +93,8 @@ using Test
                                          length(fock_basis_2) *
                                          length(spin_basis_2)
 
-        @test_throws Exception CompositeBasis((composite_mix_1, composite_mix_2),
+        @test_throws Exception CompositeBasis(
+            (composite_mix_1.bases..., composite_mix_2.bases...),
             [composite_mix_2.dimension; composite_mix_1.dimension])
 
         tensor_generic = tensor(generic_basis_1, generic_basis_2)
@@ -101,16 +102,26 @@ using Test
         tensor_spin = tensor(spin_basis_1, spin_basis_2)
         tensor_mix_1 = tensor(generic_basis_1, fock_basis_1, spin_basis_1)
         tensor_mix_2 = tensor(generic_basis_2, fock_basis_2, spin_basis_2)
+        tensor_mix_12 = tensor(composite_mix_1, composite_mix_2)
         tensor_mix_all = tensor(generic_basis_1, fock_basis_1, spin_basis_1,
             generic_basis_2, fock_basis_2, spin_basis_2)
+        tensor_mix_generic = tensor(composite_mix_1, generic_basis_2)
+        tensor_generic_mix = tensor(generic_basis_2, composite_mix_1)
 
+        @test tensor(generic_basis_1) == generic_basis_1
         @test composite_generic == tensor_generic
         @test composite_fock == tensor_fock
         @test composite_spin == tensor_spin
         @test composite_mix_1 == tensor_mix_1
         @test composite_mix_2 == tensor_mix_2
         @test composite_mix_all == tensor_mix_all
-        
+        @test tensor_mix_12 == tensor_mix_all
+        @test tensor_mix_generic == CompositeBasis(generic_basis_1, fock_basis_1,
+            spin_basis_1, generic_basis_2)
+        @test tensor_generic_mix == CompositeBasis(generic_basis_2, generic_basis_1,
+            fock_basis_1, spin_basis_1)
+        @test tensor_mix_generic != tensor_generic_mix
+
         @test tensor_generic == generic_basis_1 ⊗ generic_basis_2
         @test tensor_fock == fock_basis_1 ⊗ fock_basis_2
         @test tensor_spin == spin_basis_1 ⊗ spin_basis_2
