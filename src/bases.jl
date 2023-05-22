@@ -51,16 +51,18 @@ CompositeBasis{Tuple{CompositeBasis{Tuple{GenericBasis{Int64}, FockBasis{Int64}}
 struct CompositeBasis{B,T} <: Basis
     bases::B
     dimension::T
-    function CompositeBasis(bases::B, v::Vector{T}) where {B<:Tuple{Vararg{Basis}},T<:Integer}
-        if prod(v .== [length(b) for b ∈ bases])
+    function CompositeBasis(
+        bases::B, v::Vector{T}
+    ) where {B<:Tuple{Vararg{Basis}},T<:Integer}
+        if prod(v .== [length(b) for b in bases])
             return new{B,Vector{Int}}(bases, v)
         else
             error("Given dimensions do not match the given bases.")
         end
     end
 end
-function CompositeBasis(bases::B) where {B<:Tuple{Vararg{Basis}}} 
-    return CompositeBasis(bases, [length(b) for b ∈ bases])
+function CompositeBasis(bases::B) where {B<:Tuple{Vararg{Basis}}}
+    return CompositeBasis(bases, [length(b) for b in bases])
 end
 CompositeBasis(b::Basis...) = CompositeBasis((b...,))
 function Base.:(==)(b1::CompositeBasis, b2::CompositeBasis)
@@ -132,7 +134,7 @@ struct FockBasis{T} <: Basis
     end
 end
 function FockBasis(cutoff::S, offset::T=0) where {S<:Number,T<:Number}
-    FockBasis(convert(Integer, cutoff), convert(Integer, offset))
+    return FockBasis(convert(Integer, cutoff), convert(Integer, offset))
 end
 Base.:(==)(b1::FockBasis, b2::FockBasis) = b1.cutoff == b2.cutoff && b1.offset == b2.offset
 
