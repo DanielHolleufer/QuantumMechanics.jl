@@ -154,6 +154,9 @@ using Test
         @test tensor_mix_all ==
             generic_basis_1 ⊗ fock_basis_1 ⊗ spin_basis_1 ⊗ generic_basis_2 ⊗
               fock_basis_2 ⊗ spin_basis_2
+
+        @test generic_basis_1^2 == generic_basis_1 ⊗ generic_basis_1
+        @test fock_basis_1^3 == CompositeBasis(fock_basis_1, fock_basis_1, fock_basis_1)
     end
 
     @testset "FockBasis" begin

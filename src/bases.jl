@@ -81,6 +81,9 @@ contain another `CompositeBasis`.
 
 It is also possible to use to otimes symbol `⊗` as an infix operator.
 
+Rasing a basis `b` to the power of `N`, where `N` is a positive integer results in the
+tensor product of `N` copies of `b`.
+
 # Examples
 ```jldoctest
 julia> composite_basis = tensor(GenericBasis(8), FockBasis(50, 20))
@@ -91,6 +94,9 @@ CompositeBasis{Tuple{GenericBasis{Int64}, FockBasis{Int64}, SpinBasis{3//2, Int6
 
 julia> GenericBasis(12) ⊗ FockBasis(25) ⊗ SpinBasis(1)
 CompositeBasis{Tuple{GenericBasis{Int64}, FockBasis{Int64}, SpinBasis{1//1, Int64}}, Vector{Int64}}((GenericBasis{Int64}(12), FockBasis{Int64}(26, 25, 0), SpinBasis{1//1, Int64}(3, 1//1)), [12, 26, 3])
+
+julia> GenericBasis(5)^3
+CompositeBasis{Tuple{GenericBasis{Int64}, GenericBasis{Int64}, GenericBasis{Int64}}, Vector{Int64}}((GenericBasis{Int64}(5), GenericBasis{Int64}(5), GenericBasis{Int64}(5)), [5, 5, 5])
 ```
 """
 tensor(b::Basis) = b
@@ -106,6 +112,13 @@ function tensor(b1::CompositeBasis, b2::Basis)
 end
 tensor(bases::Basis...) = reduce(tensor, bases)
 const ⊗ = tensor
+
+function Base.:^(b::Basis, N::Integer)
+    if N < 1
+        error("The power of a basis must be positive.")
+    end
+    return tensor([b for _ in 1:N]...)
+end
 
 """
     FockBasis(cutoff::Integer, offset::Integer=0)
