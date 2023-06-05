@@ -157,6 +157,7 @@ using Test
 
         @test generic_basis_1^2 == generic_basis_1 ⊗ generic_basis_1
         @test fock_basis_1^3 == CompositeBasis(fock_basis_1, fock_basis_1, fock_basis_1)
+        @test_throws Exception generic_basis_1^0
     end
 
     @testset "FockBasis" begin
