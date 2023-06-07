@@ -160,6 +160,16 @@ using Test
         @test_throws Exception generic_basis_1^0
     end
 
+    @testset "partialtrace" begin
+        b = CompositeBasis(GenericBasis(5), GenericBasis(6), GenericBasis(7))
+        @test partialtrace(b, 2) == CompositeBasis(GenericBasis(5), GenericBasis(7))
+        @test partialtrace(b, (1, 3)) == GenericBasis(6)
+        @test partialtrace(b, 1, 3) == GenericBasis(6)
+
+        @test_throws Exception partialtrace(b, 4)
+        @test_throws Exception partialtrace(b, 1, 2, 3)
+    end
+
     @testset "FockBasis" begin
         fock_basis_10 = FockBasis(10)
         fock_basis_15 = FockBasis(15)

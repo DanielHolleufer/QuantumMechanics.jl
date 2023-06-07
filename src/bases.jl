@@ -121,6 +121,39 @@ function Base.:^(b::Basis, N::Integer)
 end
 
 """
+    partialtrace(b::CompositeBasis, indices...)
+
+Remove the bases with indices corresponding to the given indices from the composite bases b.
+
+If the partial trace leaves multiple remaining bases, these will be return as a
+`CompositeBasis`. If only one basis remains after performing the partial trace, it will be
+returned as itself, i. e. not in a `CompositeBasis`.
+
+# Examples
+```jldoctest
+julia> partialtrace(CompositeBasis(SpinBasis(1 // 2), FockBasis(10)), 2)
+SpinBasis{1//2, Int64}(2, 1//2)
+
+julia> partialtrace(CompositeBasis(SpinBasis(1 // 2), SpinBasis(3 // 2), FockBasis(10)), 3)
+CompositeBasis{Tuple{SpinBasis{1//2, Int64}, SpinBasis{3//2, Int64}}, Vector{Int64}}((SpinBasis{1//2, Int64}(2, 1//2), SpinBasis{3//2, Int64}(4, 3//2)), [2, 4])
+```
+"""
+function partialtrace(b::CompositeBasis, indices::Tuple{Vararg{Integer}})
+    if indices ⊈ (1:length(b.bases)...,)
+        error("Indices to be traced out are out of bounds from the bases indices.")
+    elseif indices == (1:length(b.bases)...,)
+        error("Tracing out all bases is not allowed.")
+    end
+    new_bases = b.bases[[filter(x -> !(x in indices), 1:length(b.bases))...]]
+    if length(new_bases) == 1
+        return new_bases[1]
+    else
+        return CompositeBasis(b.bases[[filter(x -> !(x in indices), 1:length(b.bases))...]])
+    end
+end
+partialtrace(b::CompositeBasis, indices::Integer...) = partialtrace(b, (indices...,))
+
+"""
     FockBasis(cutoff::Integer, offset::Integer=0)
 
 Create a basis for the Fock space starting at the offset and ending at the cutoff.
