@@ -143,7 +143,7 @@ returned as itself, i. e. not in a `CompositeBasis`.
 # Examples
 ```jldoctest
 julia> partialtrace(CompositeBasis(SpinBasis(1 // 2), FockBasis(10)), 2)
-SpinBasis{1//2, Int64}(2, 1//2)
+SpinBasis{1//2, Int64}((2,), 1//2)
 
 julia> partialtrace(CompositeBasis(SpinBasis(1 // 2), SpinBasis(3 // 2), FockBasis(10)), 3)
 CompositeBasis{Tuple{SpinBasis{1//2, Int64}, SpinBasis{3//2, Int64}}, Tuple{Int64, Int64}}((SpinBasis{1//2, Int64}((2,), 1//2), SpinBasis{3//2, Int64}((4,), 3//2)), (2, 4))
