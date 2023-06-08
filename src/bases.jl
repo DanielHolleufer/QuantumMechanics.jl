@@ -146,7 +146,7 @@ julia> partialtrace(CompositeBasis(SpinBasis(1 // 2), FockBasis(10)), 2)
 SpinBasis{1//2, Int64}(2, 1//2)
 
 julia> partialtrace(CompositeBasis(SpinBasis(1 // 2), SpinBasis(3 // 2), FockBasis(10)), 3)
-CompositeBasis((SpinBasis{1//2, Int64}((2,), 1//2), SpinBasis{3//2, Int64}((4,), 3//2)), (2, 4))
+CompositeBasis{Tuple{SpinBasis{1//2, Int64}, SpinBasis{3//2, Int64}}, Tuple{Int64, Int64}}((SpinBasis{1//2, Int64}((2,), 1//2), SpinBasis{3//2, Int64}((4,), 3//2)), (2, 4))
 ```
 """
 function partialtrace(b::CompositeBasis, indices::Tuple{Vararg{Integer}})
@@ -172,10 +172,10 @@ Create a basis for the Fock space starting at the offset and ending at the cutof
 # Examples
 ```jldoctest
 julia> FockBasis(10)
-FockBasis{Int64}(11, 10, 0)
+FockBasis{Int64}((11,), 10, 0)
 
 julia> FockBasis(10, 2)
-FockBasis{Int64}(9, 10, 2)
+FockBasis{Int64}((9,), 10, 2)
 ```
 """
 struct FockBasis{T} <: Basis
@@ -205,10 +205,10 @@ The argument `spin` must be integer or half integer. It is then stored as a Rati
 # Examples
 ```jldoctest
 julia> SpinBasis(1 // 2)
-SpinBasis{1//2, Int64}(2, 1//2)
+SpinBasis{1//2, Int64}((2,), 1//2)
 
 julia> SpinBasis(100)
-SpinBasis{100//1, Int64}(201, 100//1)
+SpinBasis{100//1, Int64}((201,), 100//1)
 ```
 """
 struct SpinBasis{S,T} <: Basis
