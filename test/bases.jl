@@ -46,11 +46,8 @@ using Test
             fock_basis_2,
             spin_basis_2,
         )
-        composite_nested_1 = CompositeBasis(composite_mix_1, composite_mix_2)
-        composite_nested_2 = CompositeBasis(
-            (composite_mix_1.bases..., composite_mix_2.bases...),
-            [composite_mix_1.dimension; composite_mix_2.dimension],
-        )
+        composite_nested = CompositeBasis(composite_mix_1, composite_mix_2)
+        composite_nested_deeply = CompositeBasis(composite_nested, composite_nested)
         composite_mix_generic_1 = CompositeBasis(composite_mix_1, generic_basis_2)
         composite_mix_generic_2 = CompositeBasis(composite_mix_2, generic_basis_1)
 
@@ -60,40 +57,24 @@ using Test
         @test composite_generic != composite_spin
         @test composite_fock != composite_spin
         @test composite_mix_1 != composite_mix_2
-        @test composite_mix_all != composite_nested_1
-        @test composite_mix_all == composite_nested_2
+        @test composite_mix_all != composite_nested
         @test composite_mix_generic_1 !=
             CompositeBasis(generic_basis_1, fock_basis_1, spin_basis_1, generic_basis_2)
         @test composite_mix_generic_2 !=
             CompositeBasis(generic_basis_2, fock_basis_2, spin_basis_2, generic_basis_1)
         @test composite_mix_generic_1 != composite_mix_generic_2
 
-        @test composite_generic.dimension == [
-            generic_basis_1.dimension
-            generic_basis_2.dimension
-        ]
-        @test composite_fock.dimension == [fock_basis_1.dimension; fock_basis_2.dimension]
-        @test composite_spin.dimension == [spin_basis_1.dimension; spin_basis_2.dimension]
-        @test composite_mix_1.dimension == [
-            generic_basis_1.dimension
-            fock_basis_1.dimension
-            spin_basis_1.dimension
-        ]
-        @test composite_mix_2.dimension == [
-            generic_basis_2.dimension
-            fock_basis_2.dimension
-            spin_basis_2.dimension
-        ]
-        @test composite_nested_1.dimension == [
-            length(composite_mix_1)
-            length(composite_mix_2)
-        ]
-        @test composite_nested_1.dimension != [
-            composite_mix_1.dimension
-            composite_mix_2.dimension
-        ]
-        @test composite_mix_1.dimension != composite_mix_2.dimension
-        @test composite_nested_1.dimension != composite_mix_all.dimension
+        @test composite_generic.size == (generic_basis_1.size..., generic_basis_2.size...)
+        @test composite_fock.size == (fock_basis_1.size..., fock_basis_2.size...)
+        @test composite_spin.size == (spin_basis_1.size..., spin_basis_2.size...)
+        @test composite_mix_1.size ==
+            (generic_basis_1.size..., fock_basis_1.size..., spin_basis_1.size...)
+        @test composite_mix_2.size ==
+            (generic_basis_2.size..., fock_basis_2.size..., spin_basis_2.size...)
+        @test composite_nested.size == (length(composite_mix_1), length(composite_mix_2))
+        @test composite_nested.size != (composite_mix_1.size..., composite_mix_2.size...)
+        @test composite_mix_1.size != composite_mix_2.size
+        @test composite_nested.size != composite_mix_all.size
 
         @test composite_generic.bases == (generic_basis_1, generic_basis_2)
         @test composite_fock.bases == (fock_basis_1, fock_basis_2)
@@ -110,10 +91,16 @@ using Test
         @test length(composite_mix_2) ==
             length(generic_basis_2) * length(fock_basis_2) * length(spin_basis_2)
 
-        @test_throws Exception CompositeBasis(
-            (composite_mix_1.bases..., composite_mix_2.bases...),
-            [composite_mix_2.dimension; composite_mix_1.dimension],
+        @test flatten(composite_nested) == composite_mix_all
+        @test flatten(composite_nested_deeply) == CompositeBasis(
+            composite_nested.bases[1].bases...,
+            composite_nested.bases[2].bases...,
+            composite_nested.bases[1].bases...,
+            composite_nested.bases[2].bases...,
         )
+        @test flatten(
+            CompositeBasis(CompositeBasis(generic_basis_1, fock_basis_1), spin_basis_1)
+        ) == composite_mix_1
 
         tensor_generic = tensor(generic_basis_1, generic_basis_2)
         tensor_fock = tensor(fock_basis_1, fock_basis_2)
