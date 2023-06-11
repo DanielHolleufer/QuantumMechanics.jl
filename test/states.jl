@@ -31,6 +31,8 @@ using Test
 
         @test_throws Exception Bra(basis_1, u_2)
         @test_throws Exception Bra(basis_2, u_1)
+        @test_throws Exception Ket(basis_1, u_2)
+        @test_throws Exception Ket(basis_2, u_1)
         @test_throws Exception Bra(
             basis_1, (0.0 + 0.0im, 0.0 - 0.0im, 0.0 + 1.0im / 2, 0.0 + 0.0im)
         )
