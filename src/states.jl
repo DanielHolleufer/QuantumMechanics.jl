@@ -59,7 +59,26 @@ mutable struct Bra{B,T} <: StateVector
 end
 Base.:(==)(u::Bra, v::Bra) = u.data == v.data && u.basis == v.basis
 
-Base.:(*)(u::Bra, v::Ket) = dot(u.data, v.data)
+# Arithmetic and vector operations, addition, subtraction, scalar multiplication and
+# division, and inner product.
+Base.:(+)(u::Ket{B}, v::Ket{B}) where {B<:Basis} = Ket(u.basis, u.data + v.data)
+Base.:(+)(::Ket, ::Ket) = error("The bases of the two kets do not match.")
+Base.:(-)(u::Ket{B}, v::Ket{B}) where {B<:Basis} = Ket(u.basis, u.data - v.data)
+Base.:(-)(::Ket, ::Ket) = error("The bases of the two kets do not match.")
+Base.:(*)(x::Number, v::Ket) = Ket(v.basis, x * v.data)
+Base.:(*)(v::Ket, x::Number) = Ket(v.basis, v.data * x)
+Base.:(/)(v::Ket, x::Number) = Ket(v.basis, v.data / x)
+
+Base.:(+)(u::Bra{B}, v::Bra{B}) where {B<:Basis} = Bra(u.basis, u.data + v.data)
+Base.:(+)(::Bra, ::Bra) = error("The bases of the two kets do not match.")
+Base.:(-)(u::Bra{B}, v::Bra{B}) where {B<:Basis} = Bra(u.basis, u.data - v.data)
+Base.:(-)(::Bra, ::Bra) = error("The bases of the two kets do not match.")
+Base.:(*)(x::Number, v::Bra) = Bra(v.basis, x * v.data)
+Base.:(*)(v::Bra, x::Number) = Bra(v.basis, v.data * x)
+Base.:(/)(v::Bra, x::Number) = Bra(v.basis, v.data / x)
+
+Base.:(*)(u::Bra{B}, v::Ket{B}) where {B<:Basis} = dot(u.data, v.data)
+Base.:(*)(::Ket, ::Ket) = error("The bases of the two kets do not match.")
 
 """
     dagger(ψ::StateVector)
