@@ -37,4 +37,22 @@ using Test
             basis_1, (0.0 + 0.0im, 0.0 - 0.0im, 0.0 + 1.0im / 2, 0.0 + 0.0im)
         )
     end
+
+    @testset "dagger" begin
+        v_1 = [1.0 / sqrt(2.0) + 0.0im, 0.0 - 1.0im / 2.0, 0.0 + 0.0im, -1.0 / 2.0 + 0.0im]
+        basis_1 = GenericBasis(4)
+        @test dagger(Ket(basis_1, v_1)) == Bra(basis_1, v_1')
+        @test dagger(Bra(basis_1, v_1)) == Ket(basis_1, v_1')
+        @test dagger(dagger(Ket(basis_1, v_1))) == Ket(basis_1, v_1)
+        @test dagger(dagger(Bra(basis_1, v_1))) == Bra(basis_1, v_1)
+        @test dagger(Ket(basis_1, v_1)) != Bra(basis_1, v_1)
+
+        @test Ket(basis_1, v_1)' == adjoint(Ket(basis_1, v_1))
+        @test Bra(basis_1, v_1)' == adjoint(Bra(basis_1, v_1))
+        @test Ket(basis_1, v_1)' == Bra(basis_1, v_1')
+        @test Bra(basis_1, v_1)' == Ket(basis_1, v_1')
+        @test Ket(basis_1, v_1)'' == Ket(basis_1, v_1)
+        @test Bra(basis_1, v_1)'' == Bra(basis_1, v_1)
+        @test Ket(basis_1, v_1)' != Bra(basis_1, v_1)
+    end
 end

@@ -60,3 +60,14 @@ end
 Base.:(==)(u::Bra, v::Bra) = u.data == v.data && u.basis == v.basis
 
 Base.:(*)(u::Bra, v::Ket) = dot(u.data, v.data)
+
+"""
+    dagger(ψ::StateVector)
+
+Hermitian transpose of the state vector. Using `dagger` on a `Ket` or a `Bra` will
+respectively return a `Bra` or a `Ket` in the same basis as the input state, but whose data
+has been complex conjugated.
+"""
+dagger(ψ::Ket) = Bra(ψ.basis, ψ.data')
+dagger(ψ::Bra) = Ket(ψ.basis, ψ.data')
+Base.adjoint(ψ::StateVector) = dagger(ψ)

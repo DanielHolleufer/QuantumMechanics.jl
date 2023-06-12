@@ -4,7 +4,7 @@ using LinearAlgebra
 
 export Basis,
     GenericBasis, CompositeBasis, FockBasis, SpinBasis, tensor, ⊗, partialtrace, flatten
-export Ket, Bra
+export Ket, Bra, dagger
 
 include("bases.jl")
 include("states.jl")
