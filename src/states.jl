@@ -64,7 +64,7 @@ julia> Bra(FockBasis(4), [1, 0, 0, 0, 0])
 Bra{FockBasis{Int64}}(FockBasis{Int64}((5,), 4, 0), ComplexF64[1.0 + 0.0im 0.0 + 0.0im … 0.0 + 0.0im 0.0 + 0.0im])
 
 julia> Bra(SpinBasis(1 // 2), [1/sqrt(2), im/sqrt(2)])
-Bra{SpinBasis{1//2, Int64}}(SpinBasis{1//2, Int64}((2,), 1//2), ComplexF64[0.7071067811865475 + 0.0im 0.0 + 0.7071067811865475im])
+Bra{SpinBasis{1//2, Int64}}(SpinBasis{1//2, Int64}((2,), 1//2), ComplexF64[0.7071067811865475 + 0.0im 0.0 - 0.7071067811865475im])
 ```
 """
 mutable struct Bra{B} <: StateVector
