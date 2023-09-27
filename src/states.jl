@@ -2,86 +2,104 @@ abstract type QuantumState end
 abstract type StateVector <: QuantumState end
 
 """
-    Ket(b::Basis, data::AbstractArray{Number})
+    Ket(b::Basis, data::AbstractVector{<:Number})
 
 Create a ket in the basis `b` with vector representation given by `data`.
 
-The vector representation is converted to a vector whose elements are complex floats.
-It also need not be normalized.
+If the elements of `data` are not `ComplexF64` they will beconverted to this type.
 
 # Examples
 ```jldoctest
 julia> Ket(FockBasis(4), [1, 0, 0, 0, 0])
-Ket{FockBasis{Int64}, ComplexF64}(FockBasis{Int64}((5,), 4, 0), ComplexF64[1.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im])
+Ket{FockBasis{Int64}}(FockBasis{Int64}((5,), 4, 0), ComplexF64[1.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im])
 
 julia> Ket(SpinBasis(1 // 2), [1/sqrt(2), im/sqrt(2)])
-Ket{SpinBasis{1//2, Int64}, ComplexF64}(SpinBasis{1//2, Int64}((2,), 1//2), ComplexF64[0.7071067811865475 + 0.0im, 0.0 + 0.7071067811865475im])
+Ket{SpinBasis{1//2, Int64}}(SpinBasis{1//2, Int64}((2,), 1//2), ComplexF64[0.7071067811865475 + 0.0im, 0.0 + 0.7071067811865475im])
 ```
 """
-mutable struct Ket{B,T} <: StateVector
+mutable struct Ket{B} <: StateVector
     basis::B
-    data::Vector{T}
-    function Ket{B,T}(
-        b::B, data::AbstractArray{<:Number}
-    ) where {B<:Basis,T<:Complex{<:AbstractFloat}}
+    data::Vector{ComplexF64}
+    function Ket{B}(b::B, data::AbstractVector{<:Number}) where {B<:Basis}
         if length(b) !== length(data)
             error("Dimension of data does not match dimension of basis.")
         end
-        return new{B,T}(b, vec(data))
+        return new{B}(b, Vector{ComplexF64}(data))
     end
 end
-function Ket{B}(b::B, data::AbstractArray{<:Number}) where {B<:Basis}
-    return Ket{B,ComplexF64}(b, vec(data))
-end
-function Ket{T}(b::Basis, data::AbstractArray{<:Number}) where {T<:Complex{<:AbstractFloat}}
-    return Ket{typeof(b),T}(b, vec(data))
-end
-function Ket(b::B, data::AbstractArray{<:Number}) where {B<:Basis}
-    return Ket{B,ComplexF64}(b, vec(data))
+function Ket(b::B, data::AbstractVector{<:Number}) where {B<:Basis}
+    return Ket{B}(b, data)
 end
 Base.:(==)(u::Ket, v::Ket) = u.data == v.data && u.basis == v.basis
 
 """
-    Bra(b::Basis, data::AbstractArray{Number})
+    Ket(b::Basis, data::Adjoint{<:Number,<:AbstractVector{<:Number}})
+
+Create ket bra in the basis `b` with vector representation given by the adjointed of `data`.
+
+If the elements of `data` are not `ComplexF64` they will beconverted to this type.
+
+Since `data` is given as an adjointed vector, it will be adjointed again before when
+constructing the `Ket`, such that the data field will be a vector.
+"""
+function Ket{B}(b::B, data::Adjoint{<:Number,<:AbstractVector{<:Number}}) where {B<:Basis}
+    return Ket{B}(b, complex(data)')
+end
+function Ket(b::Basis, data::Adjoint{<:Number,<:AbstractVector{<:Number}})
+    return Ket(b, complex(data)')
+end
+
+"""
+    Bra(b::Basis, data::AbstractVector{<:Number})
 
 Create a bra in the basis `b` with vector representation given by `data`.
 
-The vector representation is converted to a vector whose elements are complex floats.
-It also need not be normalized.
+If the elements of `data` are not `ComplexF64` they will beconverted to this type.
+
+Furthermore, the `data` field of a `Bra` is the adjoint of the `data` argiment
 
 # Examples
 ```jldoctest
 julia> Bra(FockBasis(4), [1, 0, 0, 0, 0])
-Bra{FockBasis{Int64}, ComplexF64}(FockBasis{Int64}((5,), 4, 0), ComplexF64[1.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im, 0.0 + 0.0im])
+Bra{FockBasis{Int64}}(FockBasis{Int64}((5,), 4, 0), ComplexF64[1.0 + 0.0im 0.0 + 0.0im … 0.0 + 0.0im 0.0 + 0.0im])
 
 julia> Bra(SpinBasis(1 // 2), [1/sqrt(2), im/sqrt(2)])
-Bra{SpinBasis{1//2, Int64}, ComplexF64}(SpinBasis{1//2, Int64}((2,), 1//2), ComplexF64[0.7071067811865475 + 0.0im, 0.0 + 0.7071067811865475im])
+Bra{SpinBasis{1//2, Int64}}(SpinBasis{1//2, Int64}((2,), 1//2), ComplexF64[0.7071067811865475 + 0.0im 0.0 + 0.7071067811865475im])
 ```
 """
-mutable struct Bra{B,T} <: StateVector
+mutable struct Bra{B} <: StateVector
     basis::B
-    data::Vector{T}
-    function Bra{B,T}(
-        b::B, data::AbstractArray{<:Number}
-    ) where {B<:Basis,T<:Complex{<:AbstractFloat}}
+    data::Adjoint{ComplexF64,Vector{ComplexF64}}
+    function Bra{B}(b::B, data::AbstractVector{<:Number}) where {B<:Basis}
         if length(b) !== length(data)
             error("Dimension of data does not match dimension of basis.")
         end
-        return new{B,T}(b, vec(data))
+        return new{B}(b, Vector{ComplexF64}(data)')
     end
 end
-function Bra{B}(b::B, data::AbstractArray{<:Number}) where {B<:Basis}
-    return Bra{B,ComplexF64}(b, vec(data))
-end
-function Bra{T}(b::Basis, data::AbstractArray{<:Number}) where {T<:Complex{<:AbstractFloat}}
-    return Bra{typeof(b),T}(b, vec(data))
-end
-function Bra(b::B, data::AbstractArray{<:Number}) where {B<:Basis}
-    return Bra{B,ComplexF64}(b, vec(data))
+function Bra(b::B, data::AbstractVector{<:Number}) where {B<:Basis}
+    return Bra{B}(b, data)
 end
 Base.:(==)(u::Bra, v::Bra) = u.data == v.data && u.basis == v.basis
 
-# Arithmetic and vector operations, addition, subtraction, scalar multiplication and
+"""
+    Bra(b::Basis, data::Adjoint{<:Number,<:AbstractVector{<:Number}})
+
+Create a bra in the basis `b` with vector representation given by `data`.
+
+If the elements of `data` are not `ComplexF64` they will beconverted to this type.
+
+Here `data` is already adjointed, and so will not be adjointed agian when constructing the
+`Bra`.
+"""
+function Bra{B}(b::B, data::Adjoint{<:Number,<:AbstractVector{<:Number}}) where {B<:Basis}
+    return Bra{B}(b, complex(data)')
+end
+function Bra(b::Basis, data::Adjoint{<:Number,<:AbstractVector{<:Number}})
+    return Bra(b, complex(data)')
+end
+
+# Arithmetic and vector operations, addition, subtraction, scalar multiplication, scalar
 # division, and inner product.
 Base.:(+)(u::Ket{B}, v::Ket{B}) where {B<:Basis} = Ket(u.basis, u.data + v.data)
 Base.:(+)(::Ket, ::Ket) = error("The bases of the two kets do not match.")
@@ -95,11 +113,11 @@ Base.:(+)(u::Bra{B}, v::Bra{B}) where {B<:Basis} = Bra(u.basis, u.data + v.data)
 Base.:(+)(::Bra, ::Bra) = error("The bases of the two kets do not match.")
 Base.:(-)(u::Bra{B}, v::Bra{B}) where {B<:Basis} = Bra(u.basis, u.data - v.data)
 Base.:(-)(::Bra, ::Bra) = error("The bases of the two kets do not match.")
-Base.:(*)(x::Number, v::Bra) = Bra(v.basis, x * v.data)
-Base.:(*)(v::Bra, x::Number) = Bra(v.basis, v.data * x)
-Base.:(/)(v::Bra, x::Number) = Bra(v.basis, v.data / x)
+Base.:(*)(x::Number, v::Bra) = Bra(v.basis, x' * v.data)
+Base.:(*)(v::Bra, x::Number) = Bra(v.basis, v.data * x')
+Base.:(/)(v::Bra, x::Number) = Bra(v.basis, v.data / x')
 
-Base.:(*)(u::Bra{B}, v::Ket{B}) where {B<:Basis} = dot(u.data, v.data)
+Base.:(*)(u::Bra{B}, v::Ket{B}) where {B<:Basis} = u.data * v.data
 Base.:(*)(::Bra, ::Ket) = error("The bases of the two kets do not match.")
 
 """
